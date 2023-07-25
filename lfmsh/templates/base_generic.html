@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+
+  {% block title %}<title>Мессенджер ЛФМШ</title>{% endblock %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <!-- Добавление дополнительного статического CSS файла -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link type="image/x-icon" href="{% static 'favicon.ico' %}" rel="shortcut icon">
+  <link type="Image/x-icon" href="{% static 'favicon.ico' %}" rel="icon">
+</head>
+
+<body>
+    <div id="top"></div>
+    <div class="top-panel">
+    <nav class="navbar navbar-inverse navbar-static-top navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{% url 'index' %}">Мессенджер ЛФМШ</a>
+            </div>
+    
+            <div class="navbar-collapse collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-left">
+    
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'messages' %}">Мой профиль</a></li>
+                    <li><a href="{% url 'plans' %}">Создать объявление</a></li>
+                    {% endif %}
+    
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    {% if user.is_authenticated %}
+                        <li><p class="navbar-text">В системе как {{ request.user.account.short_name }}</p></li>
+                        <li><a href="{% url 'logout' %}?next={% url 'index' %}">Выйти</a></li>
+                    {% else %}
+                        <li><p class="navbar-text navbar-rigth">Вы не авторизированы в системе</p></li>
+                        <li><a href="{% url 'login' %}">Войти</a></li>
+                    {% endif %}
+                </ul>
+    
+    
+            </div>
+        </div>
+    </nav>
+    </div>
+
+    <div class="container-fluid main">
+        <div class="row">
+            <div class="col-sm-12" style="margin-top: 66px;margin-bottom: 66px;">
+                {% block content %}
+                {% endblock %}
+
+                {% block pagination %}
+                    {% if is_paginated %}
+                        <div class="pagination">
+                            <span class="page-links">
+                                {% if page_obj.has_previous %}
+                                    <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">Предыдущая страница</a>
+                                {% endif %}
+                                <span class="page-current">
+                                    Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}.
+                                </span>
+                                {% if page_obj.has_next %}
+                                    <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">Следующая страница</a>
+                                {% endif %}
+                            </span>
+                        </div>
+                    {% endif %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

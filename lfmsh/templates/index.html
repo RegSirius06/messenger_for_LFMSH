@@ -1,0 +1,52 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Добро пожаловать!</h1>
+  <h4>Это главная страница мессенджера ЛФМШ.</h4>
+  <!--
+  {% if user.is_authenticated %}
+    <h2>Здравствуй, {{ request.user.account }}</h2>
+    <ui>
+      {% if request.user.account.party != 0 %}
+        <li>Отряд: {{ request.user.account.party }}</li>
+      {% else %}
+        <li>Вы не принадлежите ни к одному отряду.</li>
+      {% endif %}
+      {% if request.user.account.group != 'None' %}
+        <li>Группа: {{ request.user.account.group }}</li>
+      {% else %}
+        <li>Вы не состоите ни в одной группе.</li>
+        <p class="text-muted">Если это не так, вы можете обратиться к минфину, он исправит.</p>
+      {% endif %}
+    </ui>
+  {% endif %}
+    -->
+  {% if readen_status %}
+  <h4><strong class="green">У вас нет новых сообщений.</strong></h4>
+  {% else %}
+  <h4><strong class="red">У вас есть новые сообщения!</strong></h4>
+  {% endif %}
+  <h4>Используйте поле сверху для навигации по сайту.</h4>
+  {% if perms.lfmsh.staff_ %}
+    <h2>Для персонала:</h2>
+    <div class="container-fluid">
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="{% url 'info-users' %}">Работа с пользователями</a></li>
+          <li><a href="{% url 'plans-new' %}">Работа с объявлениями</a></li>
+          <!--li><a href="file:///C:/lisbank/db.sqlite3" download="data_base" title="Для Стефана">Скачать базу данных</a></li-->
+        </ul>
+    </div>
+  {% endif %}
+<h2>Объявления:</h2>
+{% if ant_list %}
+  {% for element in ant_list %}
+  <h3>{{ element.name }}</h3>
+  <p>{{ element.text }}</p>
+  <p class="text-muted">Создатель: {{ element.creator }}</p>
+  {% endfor %}
+  <p class="text-muted">Тоже хочешь разместить объявление? Подай заявку на его размещение <a href="{% url 'plans' %}">здесь...</a></p>
+{% else %}
+  <p>Здесь ещё нет объявлений. Но вы можете подать заявку на их размещение <a href="{% url 'plans' %}">здесь...</a></p>
+{% endif %}
+  <a href="#top" title="В начало" tabindex="-1" class="topbutton">Наверх</a>
+{% endblock %}

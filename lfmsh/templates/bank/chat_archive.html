@@ -1,0 +1,41 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Здравствуй, {{ request.user.account }}</h1>
+<h2>Заархивированные чаты:</h2>
+{% if messages %}
+<table class="table">
+    <tr class="tr">
+        <td class="td">Чат</td>
+        <td class="td">Создатель</td>
+        <td class="td">Приватность</td>
+        <td class="td">Ссылка</td>
+    </tr>
+    {% for element in messages %}
+    <tr class="tr">
+        <td class="td">{{ element.name }}</td>
+        <td class="td">{{ element.creator }}</td>
+        <td class="td"><span {% if element.anonim %} class="green" {% elif not element.anonim_legacy %} class="red" {% endif %}>
+            {{ element.anonim_status }}</span></td>
+        <td class="td"><a href="{{ element.get_absolute_url_from_archive }}">Перейти в чат</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% if messages.has_previous %}
+    <a href="?page2={{ messages.previous_page_number }}">Предыдущая страница</a>
+{% endif %}
+<span class="page-current">
+    Страница {{ messages.number }} из {{ messages.paginator.num_pages }}.
+</span>
+{% if messages.has_next %}
+    <a href="?page2={{ messages.next_page_number }}">Следующая страница</a>
+{% endif %}
+<form method="GET" action="{% url 'messages' %}">
+    <input type="text" name="page1" value="{{ messages.number }}" />
+    <button type="submit">Перейти</button>
+</form>
+{% else %}
+    <p>В архиве ещё нет чатов.</p>
+{% endif %}
+<a href="#top" title="В начало" tabindex="-1" class="topbutton">Наверх</a>
+{% endblock %}

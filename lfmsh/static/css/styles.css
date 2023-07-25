@@ -1,0 +1,63 @@
+.green{
+    color: forestgreen;
+}
+.red{
+    color: mediumvioletred;
+}
+.table{
+    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    border-collapse: collapse;
+    color: #686461;
+}
+.caption{
+    padding: 10px;
+    color: white;
+    background: #8FD4C1;
+    font-size: 18px;
+    text-align: left;
+    font-weight: bold;
+}
+.th{
+    border-bottom: 3px solid #B9B29F;
+    padding: 10px;
+    text-align: left;
+}
+.td{
+    padding: 10px;
+}
+.tr:nth-child(odd){
+    background: white;
+}
+.tr:nth-child(even){
+    background: #E8E6D1;
+}
+.multiple-text{
+    white-space: pre-line;
+    text-align: justify;
+}
+.topbutton{
+    width:100px;
+    border:2px solid #ccc;
+    background:#f7f7f7;
+    text-align:center;
+    padding:10px;
+    position:fixed;
+    bottom:50px;
+    right:50px;
+    cursor:pointer;
+    color:#333;
+    font-family:verdana;
+    font-size:12px;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -khtml-border-radius: 5px;
+}
+.footer{
+    padding: 10px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100; /* Добавьте это свойство */
+}

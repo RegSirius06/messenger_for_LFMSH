@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+{% block content %}
+
+    <h1>Новый аккаунт</h1>
+    <form action="" method="post">
+        {% csrf_token %}
+        <table>
+        {{ form }}
+        </table>
+        <input type="submit" value="Сохранить">
+        <input type="submit" name="save_and_new" value="Сохранить и добавить новый">
+    </form>
+
+{% endblock %}

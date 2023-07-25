@@ -1,0 +1,86 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1><img src="{{ chat.get_img }}" width="30px" height="30px" />Чат "{{ chat.name }}"</h1>
+<h2>Описание:</h2>
+<p><pre class="multiple-text">{{ chat.description }}</pre></p>
+<h2>Информация:</h2>
+<form action="" method="post"><ui>
+    <li>Создатель: <strong>{{ chat.creator }}</strong></li>
+    {% if not chat.anonim %}
+    <li>Количество участников: <strong>{{ chat.cnt }}</strong></li>
+    {% else %}
+    <li>Количество участников: <strong>больше одного...</strong></li>
+    {% endif %}
+    <li>Тип чата: <strong>{% if chat.anonim %}<span class="green">Анонимный{% else %}<span class="red">Публичный{% endif %}</span></strong></li>
+    {% if not chat.anonim %}
+    <li>Анонимные сообщения в чате <strong>{% if chat.anonim_legacy %}<span class="green">разрешены{% else %}<span class="red">запрещены{% endif %}</span></strong>.</li>
+    {% else %}
+    <li>Все сообщения в чате <strong class="green">анонимные</strong>.</li>
+    {% endif %}
+    {% if request.user.account == chat.creator %}
+    <li><strong><a href="{{ chat.get_absolute_url_for_edit }}">Если вы хотите изменить этот чат, перейдите по данной ссылке...</a></strong></li>
+    {% endif %}
+    <li>Чат помечен {% if readen_status %}<strong class="green">прочитанным{% else %}<strong class="red">не прочитанным{% endif %}</strong>.</li>
+    {% csrf_token %}
+    {{ form2.as_ul }}
+    {% if readen_status %}
+    <input type="submit" value="Пометить непрочитанным" />
+    {% else %}
+    <input type="submit" value="Пометить прочитанным" />
+    {% endif %}
+</ui></form>
+{% if chat.chat_valid.avaliable %}
+<h2>Создать новое сообщение:</h2>
+<form action="" method="post">
+    {% csrf_token %}
+    <table>
+    {{ form }}
+    </table>
+    <input type="submit" value="Отправить" />
+</form>
+{% endif %}
+<h2>Сообщения:</h2>
+{% if messages %}
+<table class="table">
+    <tr class="tr">
+        <td class="td">Данные об отправителе</td>
+        <td class="td">Текст сообщения</td>
+    </tr>
+    <tr class="tr">
+        <td class="td" colspan="2"></td>
+    </tr>
+    {% for element in messages %}
+    <tr class="tr">
+        <td class="td">{% if element.anonim %}Сообщение отправлено анонимно.{% else %}{{ element.creator }}{% endif %}</td>
+        <td class="td" rowspan="4"><pre class="multiple-text">{{ element.text }}</pre></td>
+    </tr>
+    <tr class="tr">
+        <td class="td">{% if element.anonim %}Статус неизвестен{% else %}Статус: {{ element.creator.get_status }}{% endif %}.</td>
+    </tr>
+    <tr class="tr">
+        <td class="td">Отправка: {{ element.get_date }}.</td>
+    </tr>
+    <tr class="tr">
+        <td class="td" colspan="2"></td>
+    </tr>
+    {% endfor %}
+</table>
+{% if messages.has_previous %}
+    <a href="?page2={{ messages.previous_page_number }}">Предыдущая страница</a>
+{% endif %}
+<span class="page-current">
+    Страница {{ messages.number }} из {{ messages.paginator.num_pages }}.
+</span>
+{% if messages.has_next %}
+    <a href="?page2={{ messages.next_page_number }}">Следующая страница</a>
+{% endif %}
+{% else %}
+    <p>В чат ещё никто не писал. Будьте первым!</p>
+{% endif %}
+<form method="GET" action="{{ chat_.get_absolute_url }}">
+    <input type="text" name="page1" value="{{ messages.number }}" />
+    <button type="submit">Перейти</button>
+</form>
+<a href="#top" title="В начало" tabindex="-1" class="topbutton">Наверх</a>
+{% endblock %}
