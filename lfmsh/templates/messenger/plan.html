@@ -1,0 +1,48 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Объявления:</h1>
+{% if plans %}
+    <table class="table">
+        <tr class="tr">
+            <td class="td">Создатель</td>
+            <td class="td">Название</td>
+            <td class="td">Текст</td>
+            <td class="td">Ссылка на изображение</td>
+            <td class="td">Ссылка изменения</td>
+        </tr>
+        {% for element in plans %}
+        <tr class="tr">
+            <td class="td">{{ element.creator }}</td>
+            <td class="td">{{ element.name }}</td>
+            <td class="td"><pre class="multiple-text">{{ element.text }}</pre></td>
+            <td class="td">
+                {% if element.picture %}
+                <a href="{{ element.get_img }}" class="green">Просмотрть изображение здесь...</a>
+                {% else %}
+                <span class="red">Нет</span>
+                {% endif %}
+            </td>
+            <td class="td"><a href="{{ element.get_absolute_url }}">Изменить объявление...</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% if plans.has_previous %}
+        <a href="?page1={{ plans.previous_page_number }}">Предыдущая страница</a>
+    {% endif %}
+    <span class="page-current">
+        Страница {{ plans.number }} из {{ plans.paginator.num_pages }}.
+    </span>
+    {% if plans.has_next %}
+        <a href="?page1={{ plans.next_page_number }}">Следующая страница</a>
+    {% endif %}
+    <form method="GET" action="{% url 'messages' %}">
+        <input type="text" name="page1" value="{{ messages.number }}" />
+        <button type="submit">Перейти</button>
+    </form>
+{% else %}
+    <p>Все объявления уже приняты или ещё ни одного объявления ещё не создано.</p>
+{% endif %}
+
+{% endblock %}

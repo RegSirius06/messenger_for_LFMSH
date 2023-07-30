@@ -162,6 +162,9 @@ class chat(models.Model):
 
     def get_absolute_url_from_archive(self):
         return reverse('chats-archived-n', args=[str(self.id)])
+
+    def get_absolute_url_for_msg(self):
+        return reverse('update-messages', args=[str(self.id)])
     
     def anonim_status(self):
         return 'Анонимный чат' if self.anonim else \
@@ -173,6 +176,13 @@ class chat(models.Model):
         chat_validator.avaliable = False
         list_x = chat_validator.get_all_CAA()
         for i in list_x: i.read_chat()
+        chat_validator.save()
+
+    def dearchive(self):
+        chat_validator = chat_valid.objects.get(what_chat=self)
+        chat_validator.avaliable = True
+        list_x = chat_validator.get_all_CAA()
+        for i in list_x: i.unread_chat()
         chat_validator.save()
 
     def get_read_status(self, acc: account):
@@ -255,9 +265,21 @@ class announcement(models.Model):
     text = models.TextField(max_length=5000, verbose_name='Текст:')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text="Уникальный ID.")
     status = models.BooleanField(default=False, verbose_name="Объявление принято?")
+    picture = models.ImageField(verbose_name="Картинка:", null=True)
+
+    PICTURE_TYPES = (
+        (0, "Горизонтально"),
+        (1, "Вертикально"),
+        (2, "Квадрат"),
+    )
+
+    orientation = models.IntegerField(choices=PICTURE_TYPES, verbose_name="Ориентация:", default=0)
 
     def get_absolute_url(self):
         return reverse('plans-new-n', args=[str(self.id)])
+
+    def get_img(self):
+        return static(f'uploads/{self.picture}')
 
     def __str__(self):
         return f'{self.name} (создал {self.creator})'

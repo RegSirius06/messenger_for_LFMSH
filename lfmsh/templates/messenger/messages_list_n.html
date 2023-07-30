@@ -1,0 +1,24 @@
+<table class="table">
+    <tr class="tr">
+        <td class="td">Данные об отправителе</td>
+        <td class="td">Текст сообщения</td>
+    </tr>
+    <tr class="tr">
+        <td class="td" colspan="2"></td>
+    </tr>
+    {% for element in messages %}
+    <tr class="tr">
+        <td class="td">{% if element.anonim %}Сообщение отправлено анонимно.{% else %}{{ element.creator }}{% endif %}</td>
+        <td class="td" rowspan="4"><pre class="multiple-text">{{ element.text }}</pre></td>
+    </tr>
+    <tr class="tr">
+        <td class="td">{% if element.anonim %}Статус неизвестен{% else %}Статус: {{ element.creator.get_status }}{% endif %}.</td>
+    </tr>
+    <tr class="tr">
+        <td class="td">Отправка: {{ element.get_date }}.</td>
+    </tr>
+    <tr class="tr">
+        <td class="td" colspan="2"></td>
+    </tr>
+    {% endfor %}
+</table>

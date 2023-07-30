@@ -1,9 +1,3 @@
 login: n.n.not_stated
-password: PVeUtuKczMph
-------------------------------
-login: n.n.not_stated
-password: XSGYeJmxcxGw
-------------------------------
-login: n.n.not_stated
-password: 4sJ3Fj3sq2Cb
+password: MjU63PFNg5uY
 ------------------------------

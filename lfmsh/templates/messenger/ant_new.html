@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+    <h1>Создание нового объявления</h1>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <table>
+        {{ form }}
+        </table>
+        <input type="submit" value="Подать заявку на создание" />
+        <p>После оплаты объявления оно в ближайшее всемя появится на главной странице.</p>
+    </form>
+
+{% endblock %}

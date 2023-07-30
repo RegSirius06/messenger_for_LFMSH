@@ -2,7 +2,7 @@ import os
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from lfmsh.models import account, message, chat, chat_and_acc, chat_valid
+from lfmsh.models import account, message, chat, chat_and_acc, chat_valid, announcement
 from django.templatetags.static import static
 from django.core.paginator import Paginator
 from django.utils.safestring import mark_safe
@@ -114,10 +114,12 @@ class NewChatForm(forms.Form):
         return self.cleaned_data['chat_description']
     
     image_list = [f'{i}.png' for i in range(9)]
-    image_choice = forms.ChoiceField(label="Аватарка чата:", choices=[(img, img) for img in image_list], widget=ImageSelectWidget())
+    image_choice = forms.ChoiceField(label="Аватарка чата:", required=False, choices=[(img, img) for img in image_list], widget=ImageSelectWidget())
 
     def clean_image_choice(self):
-        return self.cleaned_data['image_choice']
+        img = self.cleaned_data['image_choice']
+        if img is None: img = self.image_list[0]
+        return img
 
     chat_anonim = forms.BooleanField(initial=False, required=False, help_text="Если вы хотите сделать чат анонимным, поставьте здесь галочку.\nЭтот параметр неизменяем.", label="Чат анонимный?")
 
@@ -132,7 +134,10 @@ class NewChatForm(forms.Form):
     chat_members = forms.ModelMultipleChoiceField(queryset=account.objects.all(), label="Участники чата:", help_text="Выберите участника(-ов) чата.")
 
     def clean_chat_members(self):
-        return self.cleaned_data['chat_members']
+        members = self.cleaned_data['chat_members']
+        if len(list(members)) > 25:
+            raise ValidationError(_('В чате не может быть больше 25-ти человек. Если вы хотите создать чат с большим количеством людей, вам нужно обратиться к администратору.'))
+        return members
 
 class NewChatFormConflict(forms.Form):
     CONFLICT_SOLVES = (
@@ -345,6 +350,15 @@ class NewAnnouncementForm(forms.Form):
     def clean_text(self):
         return self.cleaned_data["text"]
 
+    picture = forms.ImageField(label="Картинка:", widget=forms.ClearableFileInput, required=False)
+
+    def clean_picture(self):
+        picture = self.cleaned_data["picture"]
+        if picture:
+            if not picture.name.endswith((".png", ".jpg")):
+                raise ValidationError(_("Допустимые расширения файлов: .png, .jpg"))
+        return picture
+
 class NewAnnouncementFullForm(forms.Form):
     name = forms.CharField(max_length=50, label="Название:")
 
@@ -360,6 +374,22 @@ class NewAnnouncementFullForm(forms.Form):
 
     def clean_text(self):
         return self.cleaned_data["text"]
+    
+    picture = forms.ImageField(label="Картинка:", required=False)
+
+    def clean_picture(self):
+        picture = self.cleaned_data["picture"]
+        if picture:
+            max_size = 15 * 1024 * 1024
+            if picture.size > max_size:
+                raise ValidationError(_(f"Максимальный размер файла - {max_size/1024/1024}MB"))
+        return picture
+
+    type_ = forms.ChoiceField(required=False, choices=announcement.PICTURE_TYPES, label="Ориентации картинки:", help_text="По-умолчанию горизонтально.")
+
+    def clean_type_(self):
+        x = self.cleaned_data['type_']
+        return int(x) if x else 0
 
 class ReNewAnnouncementForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -371,17 +401,7 @@ class ReNewAnnouncementForm(forms.Form):
     def clean_name(self):
         return self.cleaned_data["status"]
 
-    name = forms.CharField(max_length=50, label="Название:")
-
-    def clean_name(self):
-        return self.cleaned_data["name"]
-
     creator = forms.ModelChoiceField(queryset=account.objects.all(), label="Создатель:")
 
     def clean_creator(self):
         return self.cleaned_data["creator"]
-
-    text = forms.CharField(label="Текст:", max_length=5000, widget=forms.Textarea)
-
-    def clean_text(self):
-        return self.cleaned_data["text"]

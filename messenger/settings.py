@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-0wq90#%u1(9(9dcf86ky-8pyte3r&@v3-vwh(l396^yijoq5!k')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 # DEBUG = bool( os.environ.get('DJANGO_DEBUG', True) )
 
 ALLOWED_HOSTS = ['*']
@@ -120,7 +120,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = 'C:/LFMSH/messenger/lfmsh//static/'
+#STATIC_ROOT = 'C:/LFMSH/messenger/lfmsh/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'lfmsh', 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

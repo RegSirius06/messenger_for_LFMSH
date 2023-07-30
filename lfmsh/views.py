@@ -8,8 +8,10 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import User
+from django.template.loader import render_to_string
+from django.conf import settings
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
 from lfmsh.forms import NewMessageForm, NewAccountForm, ReNewMessageFormAnonim, ReNewMessageFormBase, NewChatForm,\
     NewMessageForm_WithoutAnonim, ReNewChatFormAnonim, ReNewChatFormBase, SetStatus,  SetReadStatusForm, NewChatFormConflict,\
@@ -22,10 +24,11 @@ import datetime
 import random
 import string
 import uuid
+import os
 
 def index(request):
     anns = announcement.objects.filter(status=True)
-    paginator1 = Paginator(anns, 25)
+    paginator1 = Paginator(anns, 3)
     page1 = request.GET.get('page1')
     try:
         items1 = paginator1.page(page1)
@@ -57,7 +60,7 @@ def plan_x(request):
         items1 = paginator1.page(paginator1.num_pages)
     return render(
         request,
-        'bank/plan.html',
+        'messenger/plan.html',
         context={'plans': items1,},
     )
 
@@ -101,7 +104,7 @@ def home(request):
     context={'messages': mess_pr, 'messages_public': mess_pub, 'items1': items1, 'items2': items2, 'form': form, 'readen_status': chat_and_acc_all,}
     return render(
         request,
-        'bank/messages.html',
+        'messenger/messages.html',
         context=context,
     )
 
@@ -153,7 +156,7 @@ def home_send(request):
         items3 = paginator3.page(paginator3.num_pages)
     return render(
         request,
-        'bank/messages_list.html',
+        'messenger/messages_list.html',
         context={'messages': mess_pr, 'messages_public': mess_pub,
                  'items1': items1, 'items2': items2, 'items3': items3,},
     )
@@ -172,7 +175,7 @@ def account_info(request):
         items1 = paginator1.page(paginator1.num_pages)
     return render(
         request,
-        'bank/account_status.html',
+        'messenger/account_status.html',
         context={
             'object_list': items1,
         }
@@ -265,7 +268,7 @@ def new_account_add(request):
         last_name = "Not stated"
         party = 0
         form = NewAccountForm(initial={'type_': type_, 'first_name': first_name, 'middle_name': middle_name, 'last_name': last_name, 'party': party})
-    return render(request, 'bank/account_form.html', {'form': form,})
+    return render(request, 'messenger/account_form.html', {'form': form,})
 
 @permission_required('lfmsh.staff_')
 @permission_required('lfmsh.register')
@@ -335,7 +338,7 @@ def new_account_full_add(request):
         last_name = "Not stated"
         party = 0
         form = NewAccountFullForm(initial={'type_': type_, 'first_name': first_name, 'middle_name': middle_name, 'last_name': last_name, 'party': party})
-    return render(request, 'bank/account_form.html', {'form': form,})
+    return render(request, 'messenger/account_form.html', {'form': form,})
 
 @permission_required('lfmsh.staff_')
 @permission_required('lfmsh.edit_users')
@@ -384,7 +387,7 @@ def re_new_account_full_add(request, pk):
         party = account_.party
         username = user_.username
         form = ReNewAccountForm(initial={'first_name': first_name, 'middle_name': middle_name, 'last_name': last_name, 'party': party, 'username': username,})
-    return render(request, 'bank/form_edit_for_all.html', {'form': form, 'delta': 'аккаунта'})
+    return render(request, 'messenger/form_edit_for_all.html', {'form': form, 'delta': 'аккаунта'})
 
 @login_required
 def new_message_add(request):
@@ -406,7 +409,7 @@ def new_message_add(request):
     else:
         form = NewMessageForm(initial={'message_text': '',})
 
-    return render(request, 'bank/messages_new.html', {'form': form,})
+    return render(request, 'messenger/messages_new.html', {'form': form,})
 
 @login_required
 def new_chat_add(request):
@@ -464,42 +467,61 @@ def new_chat_add(request):
     else:
         form = NewChatForm(current_user=current_user)
 
-    return render(request, 'bank/chats_new.html', {'form': form,})
+    return render(request, 'messenger/chats_new.html', {'form': form,})
 
 @login_required
 def new_chat_add_confilct(request, new_chat_id, new_message_id, new_chat_valid_id, existing_chat_id):
     new_chat = chat.objects.get(id=new_chat_id)
     new_message = message.objects.get(id=new_message_id)
     new_chat_valid = chat_valid.objects.get(id=new_chat_valid_id)
-    new_chat_valid.delete()
-    new_message.delete()
-    new_chat.delete()
     members = account.objects.filter(id__in=list(new_chat_valid.list_members))
+    for acc in members: chat_and_acc.objects.create(id = uuid.uuid4(), what_chat = new_chat, what_acc = acc, readen = False)
     existing_chat = chat.objects.get(id=existing_chat_id)
+    existing_chat.archive()
     if request.method == 'POST':
         form = NewChatFormConflict(request.POST)
         if form.is_valid():
             solve = int(form.cleaned_data['solve'])
             
             if solve == 2:
+                new_chat_valid.delete()
+                new_message.delete()
+                new_chat.delete()
+                existing_chat.dearchive()
                 return redirect('messages')
             
             if solve == 1:
-                existing_chat.archive()
+                new_chat_valid.delete()
+                new_message.delete()
+                new_chat.delete()
                 return redirect('messages')
 
             if solve == 0:
-                new_chat.save()
-                new_message.save()
-                new_chat_valid.save()
-                existing_chat.archive()
-                for acc in members: chat_and_acc.objects.create(id = uuid.uuid4(), what_chat = new_chat, what_acc = acc, readen = False)
+                pass
 
             return redirect('messages')
     else:
         form = NewChatFormConflict()
 
-    return render(request, 'bank/chats_new_conflict.html', {'form': form,})
+    return render(request, 'messenger/chats_new_conflict.html', {'form': form,})
+
+def update_msgs(request, pk):
+    chat_ = get_object_or_404(chat, pk=pk)
+    chat_valid_ = chat_valid.objects.get(what_chat=chat_)
+    chat_and_acc_all_ = chat_valid_.get_all_CAA()
+    chat_and_acc_ = chat_and_acc_all_.get(what_acc=request.user.account)
+    message_all_ = chat_valid_.get_all_msg()
+    paginator1 = Paginator(message_all_, 20)
+    page1 = request.GET.get('page1')
+    try:
+        items1 = paginator1.page(page1)
+    except PageNotAnInteger:
+        items1 = paginator1.page(1)
+    except EmptyPage:
+        items1 = paginator1.page(paginator1.num_pages)
+
+    html = render_to_string('messenger/messages_list_n.html', {'messages': items1})
+    return JsonResponse({'html': html, 'CAA': chat_and_acc_.readen})
 
 @login_required
 def chat_view(request, pk):
@@ -601,8 +623,8 @@ def chat_view(request, pk):
         form = NewMessageForm(initial={'message_text': text, 'message_anonim': anonim,}) \
             if not chat_.anonim and chat_.anonim_legacy else NewMessageForm_WithoutAnonim(initial={'message_text': text})
 
-    return render(request, 'bank/chats_view_n.html', {'form': form, 'messages': items1, 'chat': chat_,
-                                                      'form2': form2, 'readen_status': chat_and_acc_.readen,})
+    return render(request, 'messenger/chats_view_n.html', {'form': form, 'messages': items1, 'chat': chat_,
+                                                           'form2': form2, 'readen_status': chat_and_acc_.readen,})
 
 @login_required
 def chat_archived_view(request, pk):
@@ -618,7 +640,7 @@ def chat_archived_view(request, pk):
         items1 = paginator1.page(1)
     except EmptyPage:
         items1 = paginator1.page(paginator1.num_pages)
-    return render(request, 'bank/chats_archived_view_n.html', {'messages': items1, 'chat': chat_,})
+    return render(request, 'messenger/chats_archived_view_n.html', {'messages': items1, 'chat': chat_,})
 
 @login_required
 def chat_archive(request):
@@ -632,7 +654,7 @@ def chat_archive(request):
         items1 = paginator1.page(1)
     except EmptyPage:
         items1 = paginator1.page(paginator1.num_pages)
-    return render(request, 'bank/chat_archive.html', {'messages': items1,})
+    return render(request, 'messenger/chat_archive.html', {'messages': items1,})
 
 @login_required
 def re_new_message_add(request, pk):
@@ -668,7 +690,7 @@ def re_new_message_add(request, pk):
                 form = ReNewMessageFormAnonim(initial={'message_text': text, 'message_anonim': anonim,}) \
                     if anon_prov else ReNewMessageFormBase(initial={'message_text': text})
 
-            return render(request, 'bank/messages_edit_n.html', {'form': form,})
+            return render(request, 'messenger/messages_edit_n.html', {'form': form,})
         else: return HttpResponse("<h2>Я, конечно, всё понимаю, но <em>этого</em> мне не понять...<br/>К сожалению, вы можете редактировать только свои сообщения. <a href=\"/\">Назад...</a></h2>")
     else: return HttpResponse("<h2>Чат с данным сообщением заархивирован. <a href=\"/\">Назад...<a/></h2>")
 
@@ -703,23 +725,56 @@ def re_new_chat_add(request, pk):
                                        current_users=current_users, current_user=request.user.account) if anon_prov else \
                    ReNewChatFormBase(initial={'chat_text': text, 'chat_name': name, 'image_choice': chat_ico,}, current_users=current_users, current_user=request.user.account)
 
-        return render(request, 'bank/chats_edit_n.html', {'form': form,  'chat': chat_,})
+        return render(request, 'messenger/chats_edit_n.html', {'form': form,  'chat': chat_,})
     else: return HttpResponse("<h2>Я, конечно, всё понимаю, но <em>этого</em> мне не понять...<br/>К сожалению, вы можете редактировать только те чаты, создателем которых вы являетесь.<a href=\"/\">Назад...</a></h2>")
 
 @permission_required('lfmsh.staff_')
 @permission_required('lfmsh.register')
 def update_all_pass(request):
-    return render(request, 'bank/update_all_pass.html')
+    return render(request, 'messenger/update_all_pass.html')
 
 def new_announcement_add(request):
+    def prov(img: str) -> bool:
+        flag = True
+        with os.scandir(os.path.join(settings.STATIC_ROOT, 'uploads')) as listOfEntries:
+            for entry in listOfEntries:
+                # печать всех записей, являющихся файлами
+                if entry.is_file():
+                    print(entry.name, img)
+                    if img == entry.name:
+                        flag = False
+                        break
+        return flag
+
     flag = request.user.has_perm('lfmsh.ant_edit')
     if request.method == 'POST':
-        form = NewAnnouncementFullForm(request.POST) if flag else NewAnnouncementForm(request.POST)
+        form = NewAnnouncementFullForm(request.POST, request.FILES) if flag else NewAnnouncementForm(request.POST, request.FILES)
         if form.is_valid():
             plan_ = announcement()
             plan_.id = uuid.uuid4()
             plan_.name = form.cleaned_data['name']
             plan_.text = form.cleaned_data['text']
+            image = form.cleaned_data['picture']
+            if image:
+                name = str(image.name)
+                try:
+                    i = 0
+                    end = f".{name.split('.')[-1]}"
+                    name_x = name
+                    while not prov(name_x):
+                        name_x = f"{'.'.join(name.split('.')[:-1])}{i}{end}"
+                        i += 1
+                    name = name_x
+                    plan_.picture = name
+                    with open(os.path.join(settings.STATIC_ROOT, 'uploads', name), 'wb') as file:
+                        for chunk in image.chunks():
+                            file.write(chunk)
+                except FileNotFoundError:
+                    os.makedirs(os.path.join(settings.STATIC_ROOT, 'uploads'))
+                    with open(os.path.join(settings.STATIC_ROOT, 'uploads', image.name), 'wb') as file:
+                        for chunk in image.chunks():
+                            file.write(chunk)
+            plan_.orientation = form.cleaned_data['type_']
             if announcement.objects.all().exists(): number = list(announcement.objects.all().order_by('-number'))[-1].number + 1
             else: number = 1
             plan_.number = number
@@ -731,7 +786,7 @@ def new_announcement_add(request):
         text = name = ''
         initial={'text': text, 'name': name,}
         form = NewAnnouncementFullForm(initial=initial) if flag else NewAnnouncementForm(initial=initial)
-    return render(request, 'bank/ant_new.html', {'form': form,})
+    return render(request, 'messenger/ant_new.html', {'form': form,})
 
 @permission_required('lfmsh.staff_')
 @permission_required('lfmsh.ant_edit')
@@ -743,15 +798,11 @@ def re_new_announcement_add(request, pk):
             if form.cleaned_data['delete']:
                 plan_.delete()
             else:
-                plan_.name = form.cleaned_data['name']
-                plan_.text = form.cleaned_data['text']
                 plan_.creator = form.cleaned_data['creator']
                 plan_.status = form.cleaned_data['status']
                 plan_.save()
             return redirect('plans-new')
     else:
-        time = plan_.name
-        comment = plan_.text
         creator = plan_.creator
-        form = ReNewAnnouncementForm(initial={'text': comment, 'name': time, 'creator': creator,})
-    return render(request, 'bank/form_edit_for_all.html', {'form': form, 'delta': 'объявления'})
+        form = ReNewAnnouncementForm(initial={'creator': creator,})
+    return render(request, 'messenger/form_edit_for_all.html', {'form': form, 'delta': 'объявления'})

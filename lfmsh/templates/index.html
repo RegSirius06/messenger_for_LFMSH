@@ -42,8 +42,27 @@
   {% for element in ant_list %}
   <h3>{{ element.name }}</h3>
   <p>{{ element.text }}</p>
+  {% if element.picture %}
+    <img src="{{ element.get_img }}"
+    {% if element.orientation == 0 %} width="300" {% elif element.orientation == 1 %} width="200" {% else %} width="235" {% endif %}
+    {% if element.orientation == 0 %} height="200" {% elif element.orientation == 1 %} height="300" {% else %} height="235" {% endif %}
+    />
+  {% endif %}
   <p class="text-muted">Создатель: {{ element.creator }}</p>
   {% endfor %}
+  {% if ant_list.has_previous %}
+      <a href="?page1={{ ant_list.previous_page_number }}">Предыдущая страница</a>
+  {% endif %}
+  <span class="page-current">
+      Страница {{ ant_list.number }} из {{ ant_list.paginator.num_pages }}.
+  </span>
+  {% if ant_list.has_next %}
+      <a href="?page1={{ ant_list.next_page_number }}">Следующая страница</a>
+  {% endif %}
+  <form method="GET" action="{% url 'index' %}">
+      <input type="text" name="page1" value="{{ ant_list.number }}" />
+      <button type="submit">Перейти</button>
+  </form>
   <p class="text-muted">Тоже хочешь разместить объявление? Подай заявку на его размещение <a href="{% url 'plans' %}">здесь...</a></p>
 {% else %}
   <p>Здесь ещё нет объявлений. Но вы можете подать заявку на их размещение <a href="{% url 'plans' %}">здесь...</a></p>
