@@ -57,25 +57,8 @@
     });
 </script>
 <h2>Сообщения:</h2>
-{% if messages %}
 <div id="messages-list-n">
     {% include 'messenger/messages_list_n.html' %}
 </div>
-{% if messages.has_previous %}
-    <a href="?page2={{ messages.previous_page_number }}">Предыдущая страница</a>
-{% endif %}
-<span class="page-current">
-    Страница {{ messages.number }} из {{ messages.paginator.num_pages }}.
-</span>
-{% if messages.has_next %}
-    <a href="?page2={{ messages.next_page_number }}">Следующая страница</a>
-{% endif %}
-<form method="GET" action="{{ chat_.get_absolute_url }}">
-    <input type="text" name="page1" value="{{ messages.number }}" />
-    <button type="submit">Перейти</button>
-</form>
-{% else %}
-    <p>В чат ещё никто не писал. Будьте первым!</p>
-{% endif %}
 <a href="#top" title="В начало" tabindex="-1" class="topbutton">Наверх</a>
 {% endblock %}

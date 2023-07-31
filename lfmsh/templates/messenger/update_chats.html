@@ -1,0 +1,43 @@
+{% if items1 %}
+<table class="table">
+    <th class="th">
+        <td class="td">Чат</td>
+        <td class="td">Создатель</td>
+        <td class="td">Приватность</td>
+        <td class="td">Состояние</td>
+        <td class="td">Ссылка</td>
+    </th>
+    {% for element in items1 %}
+    {% load static %}
+    <tr class="tr">
+        <td class="td"><img src="{{ element.get_img }}" /></td>
+        <td class="td">{{ element.name }}</td>
+        <td class="td">{{ element.creator }}</td>
+        <td class="td"><span {% if element.anonim %} class="green" {% elif not element.anonim_legacy %} class="red" {% endif %}>
+            {{ element.anonim_status }}</span></td>
+        {% for el2 in readen_status %}
+        {% if el2.what_chat.id == element.id %}
+        <td class="td">{% if el2.readen %}
+            <span class="green">Прочитано</span>{% else %}<span class="red">Не прочитано</span>{% endif %}</td>
+        {% endif %}
+        {% endfor %}
+        <td class="td"><a href="{{ element.get_absolute_url }}">Перейти в чат</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% if items1.has_previous %}
+    <a href="?page1={{ items1.previous_page_number }}">Предыдущая страница</a>
+{% endif %}
+<span class="page-current">
+    Страница {{ items1.number }} из {{ items1.paginator.num_pages }}.
+</span>
+{% if items1.has_next %}
+    <a href="?page1={{ items1.next_page_number }}">Следующая страница</a>
+{% endif %}
+<form method="GET" action="{% url 'messages' %}">
+    <input type="text" name="page1" value="{{ items1.number }}" />
+    <button type="submit">Перейти</button>
+</form>
+{% else %}
+    <p>Ещё нет ни одного чата с вашим участием.</p>
+{% endif %}

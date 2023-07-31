@@ -64,6 +64,40 @@ def plan_x(request):
         context={'plans': items1,},
     )
 
+def update_chats(request):
+    chat_valid_all = list(chat_valid.objects.exclude(avaliable=False))
+    list_id_chats = []
+    for i in chat_valid_all:
+        if i.getting_access(request.user.account):
+            list_id_chats.append(i.what_chat.id)
+    mess_pr = chat.objects.filter(id__in=list_id_chats)
+    chat_and_acc_all = chat_and_acc.objects.filter(what_chat__in=mess_pr).filter(what_acc=request.user.account)
+    paginator1 = Paginator(mess_pr, 25)
+    page1 = request.GET.get('page1')
+    try:
+        items1 = paginator1.page(page1)
+    except PageNotAnInteger:
+        items1 = paginator1.page(1)
+    except EmptyPage:
+        items1 = paginator1.page(paginator1.num_pages)
+
+    html = render_to_string('messenger/update_chats.html', {'items1': items1, 'readen_status': chat_and_acc_all})
+    return JsonResponse({'html': html})
+
+def update_globals(request):
+    mess_pub = message.objects.filter(receiver=None)
+    paginator2 = Paginator(mess_pub, 10)
+    page2 = request.GET.get('page2')
+    try:
+        items2 = paginator2.page(page2)
+    except PageNotAnInteger:
+        items2 = paginator2.page(1)
+    except EmptyPage:
+        items2 = paginator2.page(paginator2.num_pages)
+
+    html = render_to_string('messenger/update_globals.html', {'items2': items2})
+    return JsonResponse({'html': html})
+
 @login_required
 def home(request):
     chat_valid_all = list(chat_valid.objects.exclude(avaliable=False))
@@ -74,7 +108,7 @@ def home(request):
     mess_pr = chat.objects.filter(id__in=list_id_chats)
     chat_and_acc_all = chat_and_acc.objects.filter(what_chat__in=mess_pr).filter(what_acc=request.user.account)
     mess_pub = message.objects.filter(receiver=None)
-    paginator1 = Paginator(mess_pr, 25)
+    paginator1 = Paginator(mess_pr, 1)
     paginator2 = Paginator(mess_pub, 10)
     page1 = request.GET.get('page1')
     page2 = request.GET.get('page2')
@@ -456,12 +490,12 @@ def new_chat_add(request):
             new_message.save()
             new_chat_valid.save()
 
+            for acc in members: chat_and_acc.objects.create(id = uuid.uuid4(), what_chat = new_chat, what_acc = acc, readen = False)
+
             for i in range(len(set_of_chats_valid)):
                 if make_valid_form(new_chat, new_chat_valid) == make_valid_form(set_of_chats_valid[i].what_chat, set_of_chats_valid[i]):
                     #return HttpResponse("<h2>Уже сейчас подобный чат существует. Надо только покопаться... не в архиве. <a href=\"/\">Назад...<a/></h2>")
                     return redirect('chats-new-conflict', new_chat.id, new_message.id, new_chat_valid.id, set_of_chats_valid[i].what_chat.id)
-
-            for acc in members: chat_and_acc.objects.create(id = uuid.uuid4(), what_chat = new_chat, what_acc = acc, readen = False)
 
             return redirect('messages')
     else:
@@ -474,8 +508,6 @@ def new_chat_add_confilct(request, new_chat_id, new_message_id, new_chat_valid_i
     new_chat = chat.objects.get(id=new_chat_id)
     new_message = message.objects.get(id=new_message_id)
     new_chat_valid = chat_valid.objects.get(id=new_chat_valid_id)
-    members = account.objects.filter(id__in=list(new_chat_valid.list_members))
-    for acc in members: chat_and_acc.objects.create(id = uuid.uuid4(), what_chat = new_chat, what_acc = acc, readen = False)
     existing_chat = chat.objects.get(id=existing_chat_id)
     existing_chat.archive()
     if request.method == 'POST':
@@ -512,7 +544,7 @@ def update_msgs(request, pk):
     chat_and_acc_ = chat_and_acc_all_.get(what_acc=request.user.account)
     message_all_ = chat_valid_.get_all_msg()
     paginator1 = Paginator(message_all_, 20)
-    page1 = request.GET.get('page1')
+    page1 = request.GET.get('page2')
     try:
         items1 = paginator1.page(page1)
     except PageNotAnInteger:
@@ -623,7 +655,7 @@ def chat_view(request, pk):
         form = NewMessageForm(initial={'message_text': text, 'message_anonim': anonim,}) \
             if not chat_.anonim and chat_.anonim_legacy else NewMessageForm_WithoutAnonim(initial={'message_text': text})
 
-    return render(request, 'messenger/chats_view_n.html', {'form': form, 'messages': items1, 'chat': chat_,
+    return render(request, 'messenger/chats_view_n.html', {'form': form, 'chat': chat_,
                                                            'form2': form2, 'readen_status': chat_and_acc_.readen,})
 
 @login_required

@@ -118,7 +118,7 @@ class NewChatForm(forms.Form):
 
     def clean_image_choice(self):
         img = self.cleaned_data['image_choice']
-        if img is None: img = self.image_list[0]
+        if img is None or img == '': img = self.image_list[0]
         return img
 
     chat_anonim = forms.BooleanField(initial=False, required=False, help_text="Если вы хотите сделать чат анонимным, поставьте здесь галочку.\nЭтот параметр неизменяем.", label="Чат анонимный?")

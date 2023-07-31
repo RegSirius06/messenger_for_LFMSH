@@ -18,7 +18,9 @@ urlpatterns = [
             views.new_chat_add_confilct, name='chats-new-conflict'),
     re_path(r'^chats/archive/$', views.chat_archive, name='chats-archived'),
     re_path(r'^chats/archive/(?P<pk>[-\w]+)/$', views.chat_archived_view, name='chats-archived-n'),
-    re_path(r'update_messages/(?P<pk>[-\w]+)/', views.update_msgs, name='update-messages'),
+    re_path(r'update/messages/(?P<pk>[-\w]+)/', views.update_msgs, name='update-messages'),
+    re_path(r'update/chats/', views.update_chats, name='update-chats'),
+    re_path(r'update/globals/', views.update_globals, name='update-globals'),
     re_path(r'^chats/(?P<pk>[-\w]+)/$', views.chat_view, name='chats-n'),
     re_path(r'^chats/(?P<pk>[-\w]+)/edit/$', views.re_new_chat_add, name='chats-edit-n'),
     

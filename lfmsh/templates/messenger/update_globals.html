@@ -1,4 +1,4 @@
-{% if messages %}
+{% if items2 %}
 <table class="table">
     <tr class="tr">
         <td class="td">Данные об отправителе</td>
@@ -7,7 +7,7 @@
     <tr class="tr">
         <td class="td" colspan="2"></td>
     </tr>
-    {% for element in messages %}
+    {% for element in items2 %}
     <tr class="tr">
         <td class="td">{% if element.anonim %}Сообщение отправлено анонимно.{% else %}{{ element.creator }}{% endif %}</td>
         <td class="td" rowspan="4"><pre class="multiple-text">{{ element.text }}</pre></td>
@@ -23,19 +23,19 @@
     </tr>
     {% endfor %}
 </table>
-{% if messages.has_previous %}
-    <a href="?page2={{ messages.previous_page_number }}">Предыдущая страница</a>
+{% if items2.has_previous %}
+    <a href="?page2={{ items2.previous_page_number }}">Предыдущая страница</a>
 {% endif %}
 <span class="page-current">
-    Страница {{ messages.number }} из {{ messages.paginator.num_pages }}.
+    Страница {{ items2.number }} из {{ items2.paginator.num_pages }}.
 </span>
-{% if messages.has_next %}
-    <a href="?page2={{ messages.next_page_number }}">Следующая страница</a>
+{% if items2.has_next %}
+    <a href="?page2={{ items2.next_page_number }}">Следующая страница</a>
 {% endif %}
-<form method="GET" action="{{ chat_.get_absolute_url }}">
-    <input type="text" name="page2" value="{{ messages.number }}" />
+<form method="GET" action="{% url 'messages' %}">
+    <input type="text" name="page1" value="{{ messages.number }}" />
     <button type="submit">Перейти</button>
 </form>
 {% else %}
-    <p>В чат ещё никто не писал. Будьте первым!</p>
+    <p>Глобальных сообщений ещё нет.</p>
 {% endif %}
