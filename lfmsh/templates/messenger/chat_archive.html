@@ -4,14 +4,15 @@
 <h1>Заархивированные чаты:</h1>
 {% if messages %}
 <table class="table">
-    <tr class="tr">
+    <th class="th">
         <td class="td">Чат</td>
         <td class="td">Создатель</td>
         <td class="td">Приватность</td>
         <td class="td">Ссылка</td>
-    </tr>
+    </th>
     {% for element in messages %}
     <tr class="tr">
+        <td class="td"><img src="{{ element.get_img }}" /></td>
         <td class="td">{{ element.name }}</td>
         <td class="td">{{ element.creator }}</td>
         <td class="td"><span {% if element.anonim %} class="green" {% elif not element.anonim_legacy %} class="red" {% endif %}>

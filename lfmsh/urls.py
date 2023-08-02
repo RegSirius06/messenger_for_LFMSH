@@ -8,6 +8,8 @@ urlpatterns = [
     re_path(r'^announcement/edit/$', views.plan_x, name='plans-new'),
     re_path(r'^announcement/edit/(?P<pk>[-\w]+)/$', views.re_new_announcement_add, name='plans-new-n'),
 
+    re_path(r'^themes/$', views.list_themes, name='list-themes'),
+
     re_path(r'^messages/$', views.home, name='messages'),
     re_path(r'^messages/new/$', views.new_message_add, name='messages-new'),
     re_path(r'^messages/edit/$', views.home_send, name='messages-edit'),

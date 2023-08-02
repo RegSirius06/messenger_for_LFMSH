@@ -3,6 +3,7 @@
 {% block content %}
 <h1>Здравствуй, {{ request.user.account }}</h1>
 <form action="" method="post"><ui>
+    <li>Если вам некомфортно читать сообщения, вы можете изменить тему сообщений <a href="{% url 'list-themes' %}">по соответствующей ссылке...</a></li>
     {% if request.user.account.party != 0 %}
     <li>Отряд: {{ request.user.account.party }}</li>
     {% else %}

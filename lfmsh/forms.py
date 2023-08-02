@@ -32,8 +32,7 @@ class SetStatus(forms.Form):
         return self.cleaned_data['status']
 
 class SetReadStatusForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    pass
 
 class NewMessageForm(forms.Form):
     message_text = forms.CharField(widget=forms.Textarea, help_text="Текст сообщения.", label="Текст:")
@@ -385,7 +384,7 @@ class NewAnnouncementFullForm(forms.Form):
                 raise ValidationError(_(f"Максимальный размер файла - {max_size/1024/1024}MB"))
         return picture
 
-    type_ = forms.ChoiceField(required=False, choices=announcement.PICTURE_TYPES, label="Ориентации картинки:", help_text="По-умолчанию горизонтально.")
+    type_ = forms.ChoiceField(required=False, choices=announcement.PICTURE_TYPES, label="Тип ориентации картинки:", help_text="По-умолчанию горизонтально.")
 
     def clean_type_(self):
         x = self.cleaned_data['type_']
@@ -405,3 +404,18 @@ class ReNewAnnouncementForm(forms.Form):
 
     def clean_creator(self):
         return self.cleaned_data["creator"]
+
+class ReNewThemeForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices', None)
+        selected = kwargs.pop('selected', None)
+        super(ReNewThemeForm, self).__init__(*args, **kwargs)
+        if choices is not None:
+            cs = ((f'{i.id}', i.name) if i else (None, 'Встроенный') for i in choices)
+            self.fields['type_'].choices = cs
+        self.fields['type_'].initial = f'{selected.id}' if selected else None
+
+    type_ = forms.ChoiceField(required=False, choices=(), label="Тема:")
+
+    def clean_type_(self):
+        return self.cleaned_data['type_']

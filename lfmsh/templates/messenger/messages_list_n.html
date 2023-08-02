@@ -1,28 +1,44 @@
 {% if messages %}
-<table class="table">
-    <tr class="tr">
-        <td class="td">Данные об отправителе</td>
-        <td class="td">Текст сообщения</td>
+{% if theme.type_theme == 'c' %}
+<table class="table{{ postfix }}">
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">Данные об отправителе</td>
+        <td class="td{{ postfix }}">Текст сообщения</td>
     </tr>
-    <tr class="tr">
-        <td class="td" colspan="2"></td>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}" colspan="2"></td>
     </tr>
     {% for element in messages %}
-    <tr class="tr">
-        <td class="td">{% if element.anonim %}Сообщение отправлено анонимно.{% else %}{{ element.creator }}{% endif %}</td>
-        <td class="td" rowspan="4"><pre class="multiple-text">{{ element.text }}</pre></td>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">{% if element.anonim %}Сообщение отправлено анонимно.{% else %}{{ element.creator }}{% endif %}</td>
+        <td class="td{{ postfix }}" rowspan="4"><pre class="multiple-text">{{ element.text }}</pre></td>
     </tr>
-    <tr class="tr">
-        <td class="td">{% if element.anonim %}Статус неизвестен{% else %}Статус: {{ element.creator.get_status }}{% endif %}.</td>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">{% if element.anonim %}Статус неизвестен{% else %}Статус: {{ element.creator.get_status }}{% endif %}.</td>
     </tr>
-    <tr class="tr">
-        <td class="td">Отправка: {{ element.get_date }}.</td>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">Отправка: {{ element.get_date }}.</td>
     </tr>
-    <tr class="tr">
-        <td class="td" colspan="2"></td>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}" colspan="2"></td>
     </tr>
     {% endfor %}
 </table>
+{% elif theme.type_theme == 'f' %}
+<hr class="hr_end{{ postfix }}" />
+{% for element in messages %}
+    <h3 class="h3{{ postfix }}"><strong>
+        {% if element.anonim %}Сообщение отправлено анонимно:{% else %}{{ element.creator }}:{% endif %}
+    </strong></h3>
+    <p class="txt{{ postfix }}"><pre class="multiple-text">{{ element.text }}</pre></p>
+    <hr class="hr_middle{{ postfix }}" />
+    <p class="txt{{ postfix }}"><strong>
+        {% if element.anonim %}Статус неизвестен{% else %}Статус: {{ element.creator.get_status }}{% endif %}.
+    </strong></p>
+    <p class="text-muted">Отправка: {{ element.get_date }}.</p>
+    <hr class="hr_end{{ postfix }}" />
+{% endfor %}
+{% endif %}
 {% if messages.has_previous %}
     <a href="?page2={{ messages.previous_page_number }}">Предыдущая страница</a>
 {% endif %}

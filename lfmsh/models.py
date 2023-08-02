@@ -43,6 +43,7 @@ class account(models.Model):
 
     party = models.IntegerField(default=0, verbose_name="Отряд:")
     account_status = models.CharField(max_length=100, default='', blank=True, verbose_name="Статус:")
+    theme_self = models.ForeignKey('theme', default=None, blank=True, null=True, on_delete=models.SET_NULL, verbose_name="Тема аккаунта:")
 
     class Meta:
         ordering = ["party", "last_name"]
@@ -286,3 +287,37 @@ class announcement(models.Model):
     
     class Meta:
         ordering = ["-number"]
+
+class theme(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text="Уникальный ID.")
+
+    name = models.CharField(max_length=50, verbose_name='Название темы:')
+
+    EXISTING_TYPES = (
+        ('c', 'Компьютерный'),
+        ('f', 'Телефонный'),
+    )
+
+    type_theme = models.CharField(choices=EXISTING_TYPES, max_length=1, verbose_name="Тип темы:", default=0)
+
+    postfix = models.CharField(default='', max_length=15, verbose_name='Постфикс:', help_text='Постфикс - это то, что будет приписано в конец css тэга. Писать только латиницей.\nПример: тэг "pass". Тогда к css при генерации таблицы будет обращён запрос "table_pass".')
+
+    def __str__(self):
+        return f'{self.name}: {self.type_theme} (постфикс: {self.postfix})'
+
+    def get_key(self):
+        return f'_{self.postfix}'
+    
+    class Meta:
+        ordering = ["type_theme", "name"]
+
+def ger_active_theme(acc: account, delete=False, new=''):
+    if delete:
+        acc.theme_self = None
+        acc.save()
+        if new != '':
+            id_x = uuid.UUID(new)
+            theme_ = theme.objects.get(id=id_x)
+            acc.theme_self = theme_
+            acc.save()
+    return acc.theme_self

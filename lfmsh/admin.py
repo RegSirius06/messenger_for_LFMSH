@@ -1,5 +1,5 @@
 from django.contrib import admin
-from lfmsh.models import account, message, chat, chat_and_acc, chat_valid, announcement
+from lfmsh.models import account, message, chat, chat_and_acc, chat_valid, announcement, theme
 
 @admin.register(chat)
 class ChatAdmin(admin.ModelAdmin):
@@ -25,4 +25,8 @@ class MessageAdmin(admin.ModelAdmin):
 
 @admin.register(announcement)
 class AnnouncementAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(theme)
+class ThemeAdmin(admin.ModelAdmin):
     pass

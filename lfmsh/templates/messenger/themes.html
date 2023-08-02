@@ -1,0 +1,116 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Темы отображения сообщений:</h1>
+{% if theme_comp %}
+<h3>Рекомендуемые темы на ПК:</h3>
+<ui>
+    {% for element in theme_comp %}
+    <li>{{ element.name }}</li>
+    {% endfor %}
+</ui>
+{% if theme_comp.has_previous %}
+    <a href="?page1={{ theme_comp.previous_page_number }}">Предыдущая страница</a>
+{% endif %}
+<span class="page-current">
+    Страница {{ theme_comp.number }} из {{ theme_comp.paginator.num_pages }}.
+</span>
+{% if theme_comp.has_next %}
+    <a href="?page1={{ theme_comp.next_page_number }}">Следующая страница</a>
+{% endif %}
+<form method="GET" action="{% url 'list-themes' %}">
+    <input type="text" name="page1" value="{{ theme_comp.number }}" />
+    <button type="submit">Перейти</button>
+</form>
+{% else %}
+<p>Из тем на ПК доступна только встроенная.</p>
+{% endif %}
+{% if theme_fone %}
+<h3>Рекомендуемые темы на смартфон:</h3>
+<ui>
+    {% for element in theme_fone %}
+    <li>{{ element.name }}</li>
+    {% endfor %}
+</ui>
+{% if theme_fone.has_previous %}
+    <a href="?page2={{ theme_fone.previous_page_number }}">Предыдущая страница</a>
+{% endif %}
+<span class="page-current">
+    Страница {{ theme_fone.number }} из {{ theme_fone.paginator.num_pages }}.
+</span>
+{% if theme_fone.has_next %}
+    <a href="?page2={{ theme_fone.next_page_number }}">Следующая страница</a>
+{% endif %}
+<form method="GET" action="{% url 'list-themes' %}">
+    <input type="text" name="page2" value="{{ theme_fone.number }}" />
+    <button type="submit">Перейти</button>
+</form>
+{% else %}
+<p>Из тем на смартфон доступна только встроенная.</p>
+{% endif %}
+<h3>Пример отображения сообщения с текущей темой:</h3>
+{% if theme.type_theme == 'c' %}
+<table class="table{{ postfix }}">
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">Данные об отправителе</td>
+        <td class="td{{ postfix }}">Текст сообщения</td>
+    </tr>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}" colspan="2"></td>
+    </tr>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">{{ request.user.account }}</td>
+        <td class="td{{ postfix }}" rowspan="4"><pre class="multiple-text">Это пример сообщения. Вы его никогда не отправляли.</pre></td>
+    </tr>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">Статус: {{ request.user.account.get_status }}</td>
+    </tr>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">Отправка: {{ date }}.</td>
+    </tr>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}" colspan="2"></td>
+    </tr>
+</table>
+{% elif theme.type_theme == 'f' %}
+    <hr class="hr_end{{ postfix }}" />
+    <h3 class="h3{{ postfix }}"><strong>{{ request.user.account }}:</strong></h3>
+    <p class="txt{{ postfix }}"><pre class="multiple-text">Это пример сообщения. Вы его никогда не отправляли.</pre></p>
+    <hr class="hr_middle{{ postfix }}" />
+    <p class="txt{{ postfix }}"><strong>Статус: {{ request.user.account.get_status }}.</strong></p>
+    <p class="text-muted">Отправка: {{ date }}.</p>
+    <hr class="hr_end{{ postfix }}" />
+{% else %}
+<table class="table">
+    <tr class="tr">
+        <td class="td">Данные об отправителе</td>
+        <td class="td">Текст сообщения</td>
+    </tr>
+    <tr class="tr">
+        <td class="td" colspan="2"></td>
+    </tr>
+    <tr class="tr">
+        <td class="td">{{ request.user.account }}</td>
+        <td class="td" rowspan="4"><pre class="multiple-text">Это пример сообщения. Вы его никогда не отправляли.</pre></td>
+    </tr>
+    <tr class="tr">
+        <td class="td">Статус: {{ request.user.account.get_status }}</td>
+    </tr>
+    <tr class="tr">
+        <td class="td">Отправка: {{ date }}.</td>
+    </tr>
+    <tr class="tr">
+        <td class="td" colspan="2"></td>
+    </tr>
+</table>
+{% endif %}
+<h3>Выберите тему из списка ниже в соответствии с рекомендациями:</h3>
+<form action="" method="post">
+    {% csrf_token %}
+    <table>
+    {{ form }}
+    </table>
+    <input type="submit" value="Применить" />
+</form>
+<a href="#top" title="В начало" tabindex="-1" class="topbutton">Наверх</a>
+{% endblock %}

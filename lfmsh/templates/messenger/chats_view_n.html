@@ -18,6 +18,7 @@
     {% else %}
     <li>Все сообщения в чате <strong class="green">анонимные</strong>.</li>
     {% endif %}
+    {% if chat.chat_valid.avaliable %}
     {% if request.user.account == chat.creator %}
     <li><strong><a href="{{ chat.get_absolute_url_for_edit }}">Если вы хотите изменить этот чат, перейдите по данной ссылке...</a></strong></li>
     {% endif %}
@@ -28,6 +29,7 @@
     <input type="submit" value="Пометить непрочитанным" />
     {% else %}
     <input type="submit" value="Пометить прочитанным" />
+    {% endif %}
     {% endif %}
 </ui></form>
 {% if chat.chat_valid.avaliable %}
@@ -40,6 +42,7 @@
     <input type="submit" value="Отправить" />
 </form>
 {% endif %}
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
     $(document).ready(function() {
@@ -50,14 +53,15 @@
                 url: "{{ chat.get_absolute_url_for_msg }}",
                 dataType: 'json',
                 success: function(response) {
-                    $('#messages-list-n').html(response.html); // Обновляем список сообщений
+                    $('#messages').html(response.html); // Обновляем список сообщений
                 }
             });
         }
     });
 </script>
+
 <h2>Сообщения:</h2>
-<div id="messages-list-n">
+<div id="messages">
     {% include 'messenger/messages_list_n.html' %}
 </div>
 <a href="#top" title="В начало" tabindex="-1" class="topbutton">Наверх</a>

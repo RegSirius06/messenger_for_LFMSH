@@ -1,13 +1,17 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-<h1>Чат "{{ chat.name }}"</h1>
+<h1><img src="{{ chat.get_img }}" width="30px" height="30px" />Чат "{{ chat.name }}"</h1>
 <h2>Описание:</h2>
 <p><pre class="multiple-text">{{ chat.description }}</pre></p>
 <h2>Информация:</h2>
 <ui>
-    <li>Создатель: {{ chat.creator }}</li>
-    <li>Количество участников: {{ chat.cnt }}</li>
+    <li>Создатель: <strong>{{ chat.creator }}</strong></li>
+    {% if not chat.anonim %}
+    <li>Количество участников: <strong>{{ chat.cnt }}</strong></li>
+    {% else %}
+    <li>Количество участников: <strong>больше одного...</strong></li>
+    {% endif %}
     <li>Тип чата: <strong>{% if chat.anonim %}<span class="green">Анонимный{% else %}<span class="red">Публичный{% endif %}</span></strong></li>
     {% if not chat.anonim %}
     <li>Анонимные сообщения в чате <strong>{% if chat.anonim_legacy %}<span class="green">разрешены{% else %}<span class="red">запрещены{% endif %}</span></strong>.</li>
@@ -17,30 +21,46 @@
 </ui>
 <h2>Сообщения:</h2>
 {% if messages %}
-<table class="table">
-    <tr class="tr">
-        <td class="td">Данные об отправителе</td>
-        <td class="td">Текст сообщения</td>
+{% if theme.type_theme == 'c' %}
+<table class="table{{ postfix }}">
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">Данные об отправителе</td>
+        <td class="td{{ postfix }}">Текст сообщения</td>
     </tr>
-    <tr class="tr">
-        <td class="td" colspan="2"></td>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}" colspan="2"></td>
     </tr>
     {% for element in messages %}
-    <tr class="tr">
-        <td class="td">{% if element.anonim %}Сообщение отправлено анонимно.{% else %}{{ element.creator }}{% endif %}</td>
-        <td class="td" rowspan="4"><pre class="multiple-text">{{ element.text }}</pre></td>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">{% if element.anonim %}Сообщение отправлено анонимно.{% else %}{{ element.creator }}{% endif %}</td>
+        <td class="td{{ postfix }}" rowspan="4"><pre class="multiple-text">{{ element.text }}</pre></td>
     </tr>
-    <tr class="tr">
-        <td class="td">{% if element.anonim %}Статус неизвестен{% else %}Статус: {{ element.creator.get_status }}{% endif %}.</td>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">{% if element.anonim %}Статус неизвестен{% else %}Статус: {{ element.creator.get_status }}{% endif %}.</td>
     </tr>
-    <tr class="tr">
-        <td class="td">Отправка: {{ element.get_date }}.</td>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}">Отправка: {{ element.get_date }}.</td>
     </tr>
-    <tr class="tr">
-        <td class="td" colspan="2"></td>
+    <tr class="tr{{ postfix }}">
+        <td class="td{{ postfix }}" colspan="2"></td>
     </tr>
     {% endfor %}
 </table>
+{% elif theme.type_theme == 'f' %}
+<hr class="hr_end{{ postfix }}" />
+{% for element in messages %}
+    <h3 class="h3{{ postfix }}"><strong>
+        {% if element.anonim %}Сообщение отправлено анонимно:{% else %}{{ element.creator }}:{% endif %}
+    </strong></h3>
+    <p class="txt{{ postfix }}"><pre class="multiple-text">{{ element.text }}</pre></p>
+    <hr class="hr_middle{{ postfix }}" />
+    <p class="txt{{ postfix }}"><strong>
+        {% if element.anonim %}Статус неизвестен{% else %}Статус: {{ element.creator.get_status }}{% endif %}.
+    </strong></p>
+    <p class="text-muted">Отправка: {{ element.get_date }}.</p>
+    <hr class="hr_end{{ postfix }}" />
+{% endfor %}
+{% endif %}
 {% if messages.has_previous %}
     <a href="?page2={{ messages.previous_page_number }}">Предыдущая страница</a>
 {% endif %}

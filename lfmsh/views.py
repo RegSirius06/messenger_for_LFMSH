@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render
-from lfmsh.models import account, message, chat, chat_valid, chat_and_acc, announcement
+from lfmsh.models import account, message, chat, chat_valid, chat_and_acc, announcement, theme, ger_active_theme
 from django.views import generic
 from django.contrib.auth.models import User, Group, Permission, AnonymousUser
 from django.contrib.auth.hashers import make_password
@@ -15,7 +15,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
 from lfmsh.forms import NewMessageForm, NewAccountForm, ReNewMessageFormAnonim, ReNewMessageFormBase, NewChatForm,\
     NewMessageForm_WithoutAnonim, ReNewChatFormAnonim, ReNewChatFormBase, SetStatus,  SetReadStatusForm, NewChatFormConflict,\
-            NewAccountFullForm, ReNewAccountForm, NewAnnouncementForm, NewAnnouncementFullForm, ReNewAnnouncementForm
+        NewAccountFullForm, ReNewAccountForm, NewAnnouncementForm, NewAnnouncementFullForm, ReNewAnnouncementForm, ReNewThemeForm
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.contrib.auth.decorators import permission_required, login_required
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -44,6 +44,47 @@ def index(request):
         request,
         'index.html',
         context={'readen_status': readen_status, 'ant_list': items1,},
+    )
+
+@login_required
+def list_themes(request):
+    date = datetime.date.today()
+    time = datetime.time(datetime.datetime.today().hour, datetime.datetime.today().minute, datetime.datetime.today().second,)
+    d_t = f'{date} в {time}'
+    list_x = [None]
+    for i in theme.objects.all():
+        list_x.append(i)
+    mess_pr = theme.objects.filter(type_theme='c')
+    mess_pub = theme.objects.filter(type_theme='f')
+    paginator1 = Paginator(mess_pr, 10)
+    paginator2 = Paginator(mess_pub, 10)
+    page1 = request.GET.get('page1')
+    page2 = request.GET.get('page2')
+    try:
+        items1 = paginator1.page(page1)
+    except PageNotAnInteger:
+        items1 = paginator1.page(1)
+    except EmptyPage:
+        items1 = paginator1.page(paginator1.num_pages)
+    try:
+        items2 = paginator2.page(page2)
+    except PageNotAnInteger:
+        items2 = paginator2.page(1)
+    except EmptyPage:
+        items2 = paginator2.page(paginator2.num_pages)
+    if request.method == 'POST':
+        form = ReNewThemeForm(request.POST, choices=list_x, selected=request.user.account.theme_self)
+        if form.is_valid():
+            x = form.cleaned_data["type_"]
+            if x: ger_active_theme(request.user.account, delete=True, new=x)
+            else: ger_active_theme(request.user.account, delete=True)
+            return redirect('list-themes')
+    else: form = ReNewThemeForm(choices=list_x, selected=request.user.account.theme_self)
+    return render(
+        request,
+        'messenger/themes.html',
+        context={'theme_comp': items1, 'theme_fone': items2, 'date': d_t, 'form': form, 'theme': ger_active_theme(request.user.account),
+                'postfix': f'_{ger_active_theme(request.user.account).postfix}' if ger_active_theme(request.user.account) else '',},
     )
 
 @permission_required('lfmsh.staff_')
@@ -95,7 +136,8 @@ def update_globals(request):
     except EmptyPage:
         items2 = paginator2.page(paginator2.num_pages)
 
-    html = render_to_string('messenger/update_globals.html', {'items2': items2})
+    html = render_to_string('messenger/update_globals.html', {'items2': items2, 'theme': ger_active_theme(request.user.account),
+           'postfix': f'_{ger_active_theme(request.user.account).postfix}' if ger_active_theme(request.user.account) else ''})
     return JsonResponse({'html': html})
 
 @login_required
@@ -108,7 +150,7 @@ def home(request):
     mess_pr = chat.objects.filter(id__in=list_id_chats)
     chat_and_acc_all = chat_and_acc.objects.filter(what_chat__in=mess_pr).filter(what_acc=request.user.account)
     mess_pub = message.objects.filter(receiver=None)
-    paginator1 = Paginator(mess_pr, 1)
+    paginator1 = Paginator(mess_pr, 25)
     paginator2 = Paginator(mess_pub, 10)
     page1 = request.GET.get('page1')
     page2 = request.GET.get('page2')
@@ -135,7 +177,8 @@ def home(request):
     else:
         status = request.user.account.account_status
         form = SetStatus(initial={'status': status,})
-    context={'messages': mess_pr, 'messages_public': mess_pub, 'items1': items1, 'items2': items2, 'form': form, 'readen_status': chat_and_acc_all,}
+    context={'items1': items1, 'items2': items2, 'form': form, 'readen_status': chat_and_acc_all, 'theme': ger_active_theme(request.user.account),
+             'postfix': f'_{ger_active_theme(request.user.account).postfix}' if ger_active_theme(request.user.account) else ''}
     return render(
         request,
         'messenger/messages.html',
@@ -540,8 +583,6 @@ def new_chat_add_confilct(request, new_chat_id, new_message_id, new_chat_valid_i
 def update_msgs(request, pk):
     chat_ = get_object_or_404(chat, pk=pk)
     chat_valid_ = chat_valid.objects.get(what_chat=chat_)
-    chat_and_acc_all_ = chat_valid_.get_all_CAA()
-    chat_and_acc_ = chat_and_acc_all_.get(what_acc=request.user.account)
     message_all_ = chat_valid_.get_all_msg()
     paginator1 = Paginator(message_all_, 20)
     page1 = request.GET.get('page2')
@@ -552,8 +593,9 @@ def update_msgs(request, pk):
     except EmptyPage:
         items1 = paginator1.page(paginator1.num_pages)
 
-    html = render_to_string('messenger/messages_list_n.html', {'messages': items1})
-    return JsonResponse({'html': html, 'CAA': chat_and_acc_.readen})
+    html = render_to_string('messenger/messages_list_n.html', {'messages': items1, 'theme': ger_active_theme(request.user.account),
+           'postfix': f'_{ger_active_theme(request.user.account).postfix}' if ger_active_theme(request.user.account) else ''})
+    return JsonResponse({'html': html,})
 
 @login_required
 def chat_view(request, pk):
@@ -655,8 +697,9 @@ def chat_view(request, pk):
         form = NewMessageForm(initial={'message_text': text, 'message_anonim': anonim,}) \
             if not chat_.anonim and chat_.anonim_legacy else NewMessageForm_WithoutAnonim(initial={'message_text': text})
 
-    return render(request, 'messenger/chats_view_n.html', {'form': form, 'chat': chat_,
-                                                           'form2': form2, 'readen_status': chat_and_acc_.readen,})
+    return render(request, 'messenger/chats_view_n.html', {'form': form, 'chat': chat_, 'messages': items1,
+           'theme': ger_active_theme(request.user.account), 'form2': form2, 'readen_status': chat_and_acc_.readen,
+           'postfix': f'_{ger_active_theme(request.user.account).postfix}' if ger_active_theme(request.user.account) else ''})
 
 @login_required
 def chat_archived_view(request, pk):
@@ -672,7 +715,8 @@ def chat_archived_view(request, pk):
         items1 = paginator1.page(1)
     except EmptyPage:
         items1 = paginator1.page(paginator1.num_pages)
-    return render(request, 'messenger/chats_archived_view_n.html', {'messages': items1, 'chat': chat_,})
+    return render(request, 'messenger/chats_archived_view_n.html', {'messages': items1, 'chat': chat_, 'theme': ger_active_theme(request.user.account),
+           'postfix': f'_{ger_active_theme(request.user.account).postfix}' if ger_active_theme(request.user.account) else ''})
 
 @login_required
 def chat_archive(request):
