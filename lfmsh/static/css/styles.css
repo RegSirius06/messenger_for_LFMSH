@@ -1,9 +1,12 @@
+/* ВСЁ, ЧТО ДАЛЬШЕ, МЕНЯТЬ НЕЛЬЗЯ */
+/* Цвета для отображения некоторого текста */
 .green{
     color: forestgreen;
 }
 .red{
     color: mediumvioletred;
 }
+/* Тема "Встроенная" */
 .table{
     font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
     border-collapse: collapse;
@@ -31,10 +34,13 @@
 .tr:nth-child(even){
     background: #E8E6D1;
 }
+
+/* ВСЁ, ЧТО ДАЛЬШЕ, МЕНЯТЬ НЕ РЕКОМЕНДУЕТСЯ */
+/* Тема "Повышенная контрастность" */
 .table_contr{
     font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
     border-collapse: collapse;
-    color: #686461;
+    color: #000000;
 }
 .caption_contr{
     padding: 10px;
@@ -58,6 +64,7 @@
 .tr_contr:nth-child(even){
     background: #d0d0d0;
 }
+/* Тема "Чёрно-белый" */
 .table_blackandwhite{
     font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
     border-collapse: collapse;
@@ -85,6 +92,7 @@
 .tr_blackandwhite:nth-child(even){
     background: #000000;
 }
+/* Тема "Повышенная контрастность (смартфон)" */
 .h3_recommended{
     background: #f0f0f0;
     font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
@@ -113,6 +121,7 @@
     background-color: black;
     height: 3px;
 }
+/* Аналог встренной темы на смартфон */
 .h3_base{
     background: #E8E6D1;
     font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
@@ -141,11 +150,15 @@
     background-color: #E8E6D1;
     height: 3px;
 }
+
+/* ВСЁ, ЧТО ДАЛЬШЕ, МЕНЯТЬ НЕЛЬЗЯ */
+/* Текст сообщения */
 .multiple-text{
     white-space: pre-line;
     text-align: justify;
     word-break: break-word;
 }
+/* Кнопка "наверх" */
 .topbutton{
     width:100px;
     border:2px solid #ccc;
@@ -164,11 +177,4 @@
     -webkit-border-radius: 5px;
     -khtml-border-radius: 5px;
 }
-.footer{
-    padding: 10px;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    z-index: 100;
-}
+/* НИЖЕ ЭТОГО КОММЕНТАРИЯ МОЖНО ПИСАТЬ СВОИ ТЕМЫ. */
